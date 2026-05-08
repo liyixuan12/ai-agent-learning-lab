@@ -1,0 +1,29 @@
+# Unified dependencies for the whole study repo.
+# Recommended: python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+
+# Core
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+requests>=2.31.0
+
+# Topic 1 / Data analysis
+pandas>=2.0.0
+numpy>=1.26.0
+
+# Topic 2 / FastAPI
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+httpx>=0.27.0
+
+# Topic 3 / LLM (optional SDK; Topic 4 also works via REST)
+google-genai
+
+# Topic 4 / RAG (lightweight in-repo retrieval; vector DB is optional)
+# chromadb
+# faiss-cpu
+
+# UI / demo
+streamlit>=1.40.0
+
+# Tests
+pytest>=8.0.0
