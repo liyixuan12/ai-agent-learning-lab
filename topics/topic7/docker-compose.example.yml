@@ -1,0 +1,76 @@
+# Topic 7 · 三服务示例 stack：API（FastAPI） + UI（Streamlit） + 向量库（Chroma）
+#
+# 用法（在仓库根目录）：
+#   docker compose -f topics/topic7/docker-compose.example.yml up --build
+#
+# 访问：
+#   API     : http://localhost:8000/health
+#   UI      : http://localhost:8501
+#   Chroma  : http://localhost:8001/api/v1/heartbeat
+#
+# 关键学习点：
+# - env_file 让容器读到 .env，但 .env 本身不会进镜像（前提：根目录有 .dockerignore 屏蔽）。
+# - depends_on + healthcheck 让 API 等 Chroma 真的就绪再启动。
+# - volume 让 Chroma 数据离开容器持久化。
+# - API 与 UI 共用同一个 Dockerfile，仅 command 不同 → 单体应用「逻辑分服务」的最低成本写法。
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: finsight-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../.env
+    environment:
+      - CHROMA_URL=http://chroma:8000
+    depends_on:
+      chroma:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    container_name: finsight-ui
+    command:
+      - streamlit
+      - run
+      - app/streamlit_app.py
+      - --server.port=8501
+      - --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - ../../.env
+    environment:
+      - API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: finsight-chroma
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma-data:/chroma/.chroma
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat',timeout=2).status==200 else 1)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  chroma-data:
+    name: finsight-chroma-data

@@ -1,0 +1,67 @@
+# Topic 7 · CI 进阶示例：在原 basic-check 基础上加一步「能不能成功 build 镜像」
+#
+# 用法：把内容合并到 .github/workflows/basic-check.yml，
+#       或单独保存为 .github/workflows/ci.yml。
+#
+# 学习点：
+# - needs: test  → 测试不通过就不浪费时间 build。
+# - push: false → CI 阶段只验证可构建，不发布到 registry。
+# - cache-from / cache-to: type=gha → 复用 GitHub Actions 自带 cache，第二次 build 会快很多。
+
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: financial-ai-demo:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 选做：镜像漏洞扫描（如果想把 supply-chain security 写进简历）
+  # trivy-scan:
+  #   runs-on: ubuntu-latest
+  #   needs: docker-build
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build image for scan
+  #       run: docker build -t financial-ai-demo:scan .
+  #     - name: Run Trivy
+  #       uses: aquasecurity/trivy-action@master
+  #       with:
+  #         image-ref: financial-ai-demo:scan
+  #         severity: HIGH,CRITICAL
+  #         exit-code: "1"

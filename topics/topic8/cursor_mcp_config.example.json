@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "finsight-ai": {
+      "command": "python",
+      "args": ["${workspaceFolder}/topics/topic8/mcp_server_demo.py"]
+    }
+  }
+}

@@ -73,10 +73,20 @@ Topic 6: Privacy & Security
         ↓
 Topic 7: Microservices & Containerization [Optional]
         ↓
+Topic 8: MCP (Model Context Protocol) [Optional]
+        ↓
+Topic 9: Agent Workflow Design
+        ↓
+Topic 10: Agent Evaluation & Observability
+        ↓
+Topic 11: Guardrails & Responsible AI
+        ↓
+Topic 12: AI Product Management
+        ↓
 Final Project: FinSight AI Demo (RAG-based financial research assistant)
 ```
 
-顺序说明：先打好 Python 与 API 基础，再独立练习 LLM 调用与提示词设计，接着做 RAG 检索链路；版本管理、安全与合规贯穿展示与上线前检查；容器化为可选加分项。  
+顺序说明：先打好 Python 与 API 基础，再独立练习 LLM 调用与提示词设计，接着做 RAG 检索链路；版本管理、安全与合规贯穿展示与上线前检查；容器化与 MCP 为可选加分项（前者解决「在哪儿跑」，后者解决「让别的 LLM 客户端怎么用」）；再进入 Agent 工作流设计、评测观测、护栏治理与产品管理，让 Demo 从“能跑”走向“可控、可评估、可讲故事”。  
 **进度一览见文末 [Progress Tracker](#progress-tracker--学习进度追踪)。**
 
 ---
@@ -791,6 +801,490 @@ Next improvement:
 
 ---
 
+# Topic 8: MCP (Model Context Protocol) [Optional]
+
+# 主题 8：MCP 模型上下文协议 [可选]
+
+## Core Content
+
+## 核心内容
+
+What MCP is, when to use it vs REST / Function Calling, the three primitives (Tools / Resources / Prompts), writing a minimal MCP server with the Python SDK, and connecting it to Cursor or Claude Desktop  
+MCP 是什么、什么时候选用 MCP 而不是 REST / Function Calling、三大原语（Tools / Resources / Prompts）、用 Python SDK 写一个最小 MCP Server，并接入 Cursor 或 Claude Desktop
+
+## Learning Goal
+
+## 学习目标
+
+After this topic, I should be able to wrap my existing financial analysis and RAG retrieval as MCP tools so that any MCP-compatible LLM client (Cursor, Claude Desktop, my own agent) can call them through a standardized protocol.  
+完成本主题后，我应能把现有的金融分析与 RAG 检索能力包装成 MCP 工具，让任何兼容 MCP 的 LLM 客户端（Cursor、Claude Desktop、我自己的 Agent）都能通过标准协议调用。
+
+This topic is optional for the demo itself, but it is a high-signal differentiator for AI engineering interviews in 2025–2026.  
+这个主题对 Demo 本身是可选的，但在 2025–2026 年的 AI 工程岗面试里是含金量很高的差异化能力。
+
+## Key Skills
+
+## 关键能力
+
+- Explain MCP in one sentence and contrast it with FastAPI and vendor function calling  
+用一句话解释 MCP，并与 FastAPI、厂商 Function Calling 做对比
+- Decide when MCP is the right tool and when it is over-engineering  
+判断什么场景该用 MCP、什么场景属于过度设计
+- Write a minimal MCP server with `FastMCP` exposing one or more tools  
+用 `FastMCP` 写一个最小 MCP Server，至少暴露一个 Tool
+- Wrap existing `src/financial_analyzer.py` and `src/rag_pipeline.py` as MCP tools  
+把仓库已有的 `src/financial_analyzer.py` 与 `src/rag_pipeline.py` 包装成 MCP Tool
+- Configure Cursor / Claude Desktop to load the local server and verify with MCP Inspector  
+在 Cursor / Claude Desktop 中配置加载本地 Server，并用 MCP Inspector 验证
+
+## Practice Outputs
+
+## 练习产出
+
+- Minimal MCP server (`topics/topic8/mcp_server_demo.py`) exposing `analyze_company` and `retrieve_docs`  
+最小 MCP Server（`topics/topic8/mcp_server_demo.py`），暴露 `analyze_company` 与 `retrieve_docs`
+- Python client (`topics/topic8/mcp_client_demo.py`) that lists tools and calls them  
+Python 客户端（`topics/topic8/mcp_client_demo.py`），列出工具并完成调用
+- Cursor / Claude Desktop config snippet committed (without secrets)  
+提交 Cursor / Claude Desktop 配置片段（不含密钥）
+
+## Suggested Files
+
+## 建议文件
+
+```text
+topics/topic8/
+    README.md
+    mcp_server_demo.py
+    mcp_client_demo.py
+    cursor_mcp_config.example.json
+```
+
+## Example Workflow
+
+## 示例工作流
+
+```text
+User in Cursor: "Help me check the risk factors for Apple's latest 10-K"
+            │
+            ▼
+Cursor (MCP Host) calls the `finsight-ai` MCP server
+            │
+            ▼
+MCP server runs `retrieve_docs("Apple risk factors")`
+  → returns top-3 grounded chunks
+            │
+            ▼
+Claude / GPT inside Cursor writes a grounded answer with source citations
+```
+
+## Completion Checklist
+
+## 完成检查表
+
+- I can explain in one sentence what MCP is and what problem it solves  
+我能用一句话讲清楚 MCP 是什么、解决什么问题
+- I can list at least one situation where MCP is the right choice and one where it is not  
+我能至少各举一个该用 MCP 与不该用 MCP 的具体场景
+- I wrote a minimal MCP server using `FastMCP`  
+我用 `FastMCP` 写了一个最小 MCP Server
+- I verified my server with MCP Inspector (`mcp dev ...`)  
+我用 MCP Inspector（`mcp dev ...`）验证过我的 Server
+- I successfully called my MCP server from Cursor or Claude Desktop  
+我从 Cursor 或 Claude Desktop 成功调用了我的 MCP Server
+- I did **not** put API keys directly into the MCP config JSON  
+我**没有**把 API Key 直接写进 MCP 配置 JSON
+- I wrote one paragraph in my README explaining why this project has both FastAPI and MCP  
+我在 README 中写了一段话解释为什么这个项目同时存在 FastAPI 和 MCP
+
+## Reflection
+
+## 学习反思
+
+```text
+What I learned:
+我学到了：
+
+What was difficult:
+我觉得困难的是：
+
+When I would actually choose MCP over a plain FastAPI endpoint:
+我什么时候会真的选 MCP 而不是普通 FastAPI 接口：
+
+How this improves my interview story:
+这如何提升我的面试故事：
+
+Next improvement:
+下一步改进：
+```
+
+---
+
+# Topic 9: Agent Workflow Design
+
+# 主题 9：Agent 工作流设计
+
+## Core Content
+
+## 核心内容
+
+Tool calling orchestration, planning vs direct answer strategy, short-term and long-term memory design, human-in-the-loop checkpoints, and tool failure recovery  
+工具调用编排、规划式回答 vs 直接回答策略、短期与长期记忆设计、人类介入（HITL）检查点、工具失败恢复机制
+
+## Learning Goal
+
+## 学习目标
+
+After this topic, I should be able to design an agent workflow that chooses tools reliably, plans when tasks are complex, remembers important context, requests human approval at critical steps, and recovers safely from tool failures.  
+完成本主题后，我应能设计一个可靠的 Agent 工作流：在复杂任务时先规划、在关键节点请求人工确认、保留关键上下文记忆，并在工具失败时安全恢复。
+
+## Key Skills
+
+## 关键能力
+
+- Define when the agent should call tools and when it should answer directly  
+定义 Agent 何时应调用工具、何时应直接回答
+- Build a simple planner policy (multi-step tasks require plan, simple tasks go direct)  
+建立简单规划策略（多步骤任务先计划，简单任务直接执行）
+- Design memory layers (session memory, project memory, durable notes)  
+设计记忆分层（会话记忆、项目记忆、持久笔记）
+- Add human-in-the-loop gates for destructive or high-risk actions  
+为高风险或破坏性操作增加人工确认门槛
+- Implement retry / fallback / degrade patterns for tool failures  
+实现工具失败时的重试 / 回退 / 降级策略
+
+## Practice Outputs
+
+## 练习产出
+
+- `agent_workflow_design.md` with decision flowcharts  
+包含决策流程图的 `agent_workflow_design.md`
+- A runnable workflow demo showing plan-first and direct-answer paths  
+可运行的工作流示例，展示“先规划”和“直接回答”两条路径
+- Failure playbook documenting timeout/error recovery actions  
+记录超时与报错恢复动作的故障处理手册
+
+## Suggested Files
+
+## 建议文件
+
+```text
+topics/topic9/
+    README.md
+    workflow_policy.py
+    memory_store.py
+    hitl_rules.md
+    failure_recovery.md
+```
+
+## Completion Checklist
+
+## 完成检查表
+
+- I can explain with examples when planning is better than direct answering  
+我能举例说明何时应先规划、何时可直接回答
+- I can describe at least two memory scopes and their tradeoffs  
+我能说明至少两种记忆范围及其取舍
+- I implemented at least one human approval checkpoint  
+我实现了至少一个人工确认检查点
+- I can recover from at least one simulated tool failure  
+我能从至少一种模拟工具失败中恢复
+
+## Reflection
+
+## 学习反思
+
+```text
+What workflow decisions worked well:
+哪些工作流决策效果最好：
+
+Where the agent made wrong tool choices:
+Agent 在工具选择上哪里出错了：
+
+How human-in-the-loop improved safety:
+人工介入如何提升了安全性：
+
+Next improvement:
+下一步改进：
+```
+
+---
+
+# Topic 10: Agent Evaluation & Observability
+
+# 主题 10：Agent 评测与可观测性
+
+## Core Content
+
+## 核心内容
+
+Golden test sets, RAG evaluation, tool-call accuracy, tracing, and cost/latency tracking  
+黄金测试集、RAG 评测、工具调用准确率、链路追踪、成本与时延跟踪
+
+## Learning Goal
+
+## 学习目标
+
+After this topic, I should be able to evaluate my agent with repeatable tests, observe execution traces end-to-end, and quantify quality-speed-cost tradeoffs.  
+完成本主题后，我应能通过可复现测试评估 Agent 质量，追踪端到端执行链路，并量化质量-速度-成本之间的权衡。
+
+## Key Skills
+
+## 关键能力
+
+- Build a golden dataset with expected outputs and pass criteria  
+构建包含期望输出与通过标准的黄金数据集
+- Define RAG metrics (retrieval hit rate, grounding quality, answer faithfulness)  
+定义 RAG 指标（检索命中率、引用贴合度、答案忠实度）
+- Measure tool-call precision/recall and argument correctness  
+评估工具调用的精准率/召回率与参数正确性
+- Add request tracing with step-level logs and IDs  
+增加逐步骤日志与请求 ID 的链路追踪
+- Track token cost and latency by scenario  
+按场景跟踪 token 成本与响应时延
+
+## Practice Outputs
+
+## 练习产出
+
+- `golden_set.jsonl` with representative financial questions  
+包含代表性金融问题的 `golden_set.jsonl`
+- Evaluation report comparing at least two prompt/workflow versions  
+至少两版提示词/工作流对比评测报告
+- Dashboard or markdown report for trace, cost, and latency trends  
+追踪、成本、时延趋势看板或 markdown 报告
+
+## Suggested Files
+
+## 建议文件
+
+```text
+topics/topic10/
+    README.md
+    golden_set.jsonl
+    eval_runner.py
+    rag_eval.md
+    observability_metrics.md
+```
+
+## Completion Checklist
+
+## 完成检查表
+
+- I can run one command/script to reproduce evaluation results  
+我可以用一条命令/脚本复现实验结果
+- I can explain at least three quality metrics for my agent  
+我能解释至少三个 Agent 质量指标
+- I can identify one major bottleneck from traces or metrics  
+我能从链路或指标中定位一个主要瓶颈
+- I can report cost and latency for a fixed test set  
+我能针对固定测试集输出成本与时延报告
+
+## Reflection
+
+## 学习反思
+
+```text
+What metrics changed after optimization:
+优化后哪些指标发生了变化：
+
+What regressions were caught by the golden set:
+黄金测试集发现了哪些回归问题：
+
+What observability data was most useful:
+最有价值的可观测数据是什么：
+
+Next improvement:
+下一步改进：
+```
+
+---
+
+# Topic 11: Guardrails & Responsible AI
+
+# 主题 11：护栏与负责任 AI
+
+## Core Content
+
+## 核心内容
+
+Prompt injection defense, financial advice boundaries, output validation, permission design, and risk documentation  
+提示词注入防护、金融建议边界、输出校验、权限设计、风险文档化
+
+## Learning Goal
+
+## 学习目标
+
+After this topic, I should be able to define and implement safety boundaries so my financial AI assistant is useful but does not cross policy, compliance, or trust limits.  
+完成本主题后，我应能为金融 AI 助手建立并落实安全边界，让系统在可用的同时不越过策略、合规和信任底线。
+
+## Key Skills
+
+## 关键能力
+
+- Detect and mitigate common prompt injection patterns  
+识别并缓解常见提示词注入模式
+- Define what is educational analysis vs prohibited personalized investment advice  
+明确“教育性分析”与“禁止的个性化投资建议”的边界
+- Validate outputs for structure, citation, and disclaimer requirements  
+对输出进行结构、引用、免责声明校验
+- Design least-privilege tool permissions for agent actions  
+按最小权限原则设计 Agent 工具权限
+- Write risk documentation and incident response notes  
+编写风险文档与异常响应说明
+
+## Practice Outputs
+
+## 练习产出
+
+- Guardrail policy document (`guardrails_policy.md`)  
+护栏策略文档（`guardrails_policy.md`）
+- Injection test cases with expected safe behavior  
+提示注入测试用例及期望安全行为
+- Output validator rules for financial disclaimer and citation checks  
+包含免责声明与引用检查的输出校验规则
+
+## Suggested Files
+
+## 建议文件
+
+```text
+topics/topic11/
+    README.md
+    guardrails_policy.md
+    injection_tests.jsonl
+    output_validator.py
+    risk_register.md
+```
+
+## Completion Checklist
+
+## 完成检查表
+
+- I can demonstrate one blocked injection and one safe fallback answer  
+我能演示一次被拦截的注入攻击和一次安全降级回复
+- I can explain my financial advice boundary in one clear paragraph  
+我能用一段清晰文字解释金融建议边界
+- I validate critical outputs before returning to users  
+我会在返回给用户前校验关键输出
+- I documented key risks and mitigation owners/actions  
+我记录了关键风险及其负责人/缓解动作
+
+## Reflection
+
+## 学习反思
+
+```text
+Where guardrails were too strict or too loose:
+护栏哪里过严或过松：
+
+What risky behavior was prevented:
+防住了哪些高风险行为：
+
+What policy is still ambiguous:
+还有哪些策略边界不够清晰：
+
+Next improvement:
+下一步改进：
+```
+
+---
+
+# Topic 12: AI Product Management
+
+# 主题 12：AI 产品管理
+
+## Core Content
+
+## 核心内容
+
+PRD writing, user journey mapping, MVP scope definition, product metrics, cost-quality tradeoff, and demo storytelling  
+PRD 编写、用户旅程设计、MVP 范围定义、产品指标、成本-质量权衡、Demo 讲述能力
+
+## Learning Goal
+
+## 学习目标
+
+After this topic, I should be able to frame my technical demo as a product: who it serves, what pain it solves, what MVP includes/excludes, how success is measured, and how to tell a convincing story.  
+完成本主题后，我应能把技术 Demo 讲成产品：服务谁、解决什么问题、MVP 包含/不包含什么、如何衡量成功，以及如何清晰讲述产品故事。
+
+## Key Skills
+
+## 关键能力
+
+- Write a concise PRD for a financial AI assistant feature  
+为金融 AI 助手功能写简明 PRD
+- Map user journey from first query to actionable output  
+绘制从首次提问到可执行输出的用户旅程
+- Define MVP scope and explicit out-of-scope items  
+定义 MVP 范围并明确不做项
+- Select north-star and supporting product metrics  
+选择北极星指标及配套指标
+- Explain cost-quality tradeoffs to stakeholders  
+向干系人解释成本-质量权衡
+- Present a compelling demo narrative for interviews or reviews  
+为面试或评审呈现有说服力的 Demo 叙事
+
+## Practice Outputs
+
+## 练习产出
+
+- One-page PRD for your final demo  
+最终 Demo 的一页 PRD
+- User journey map and MVP scope table  
+用户旅程图与 MVP 范围表
+- Metrics sheet with baseline and target values  
+含基线与目标值的指标表
+- 5-minute demo storytelling script  
+5 分钟 Demo 讲述脚本
+
+## Suggested Files
+
+## 建议文件
+
+```text
+topics/topic12/
+    README.md
+    prd.md
+    user_journey.md
+    mvp_scope.md
+    metrics_plan.md
+    demo_storytelling.md
+```
+
+## Completion Checklist
+
+## 完成检查表
+
+- I can clearly explain user, pain point, and core value in under 60 seconds  
+我能在 60 秒内清晰说出用户、痛点与核心价值
+- I defined an MVP with clear in-scope and out-of-scope boundaries  
+我定义了清晰的 MVP 范围与边界
+- I selected measurable product metrics and target values  
+我选定了可衡量的产品指标与目标值
+- I prepared a concise demo story aligned with interview expectations  
+我准备了符合面试预期的精炼 Demo 故事
+
+## Reflection
+
+## 学习反思
+
+```text
+What product insight changed my implementation priorities:
+哪些产品洞察改变了我的实现优先级：
+
+What metric best reflects user value:
+哪个指标最能反映用户价值：
+
+How I balance quality with budget/latency:
+我如何在质量与预算/时延间取舍：
+
+Next improvement:
+下一步改进：
+```
+
+---
+
 # Final Project: Financial AI Demo
 
 # 最终项目：金融 AI Demo
@@ -1036,13 +1530,18 @@ API Key 未提交到仓库
 | Topic 3: LLM & Prompt Engineering                    | Not Started | Financial Analysis Prompt Templates | LLM API call, prompt design, structured output                     |
 | Topic 4: RAG Basics                                  | Not Started | Financial Document Q&A Prototype    | document loading, chunking, embeddings, vector database, retrieval |
 | Topic 5: Version Control & GitHub                    | Not Started | GitHub Repository and README        | Git workflow, commits, branches, README, portfolio presentation    |
-| Topic 6: Privacy & Security                          | Not Started | `.env`, `.gitignore`, Disclaimer    | API key security, financial disclaimer, secure deployment basics   |
-| Topic 7: Microservices & Containerization [Optional] | Optional    | Dockerized Demo                     | Dockerfile, containerized FastAPI app, reproducible environment    |
+| Topic 6: Privacy & Security                          | In Progress | `.env`, `.gitignore`, API Key Auth, Disclaimer | API key security, FastAPI auth, secret scan, financial disclaimer  |
+| Topic 7: Microservices & Containerization [Optional] | In Progress | Multi-stage Dockerfile, Compose stack, CI build | Non-root container, .dockerignore, compose for API+UI+Chroma, CI   |
+| Topic 8: MCP (Model Context Protocol) [Optional]     | Not Started | MCP Server exposing analyze_company + retrieve_docs | FastMCP, Tools/Resources/Prompts, Cursor & Claude Desktop integration |
+| Topic 9: Agent Workflow Design                       | In Progress | Workflow policy + 3-layer memory + HITL rules + failure playbook | Router, plan-and-execute, session/project/durable memory, HITL gate, retry/fallback/degrade |
+| Topic 10: Agent Evaluation & Observability           | In Progress | Golden set + eval report + tracing metrics      | RAG evaluation, tool-call accuracy, tracing, cost/latency tracking |
+| Topic 11: Guardrails & Responsible AI                | Not Started | Guardrail policy + output validator + risk register | Prompt injection defense, advice boundary, permission design |
+| Topic 12: AI Product Management                      | Not Started | PRD + user journey + metrics + demo storytelling | MVP scope, product metrics, cost-quality tradeoff, communication |
 | Final Project                                        | Not Started | FinSight AI Demo                    | RAG-based financial research assistant                             |
 
 
 状态栏可自行改为 `In Progress` / `Done`。产出物名称与上文各主题 **Practice Outputs** 一致。  
-**双语：** Topic 1–7 与终项目对应关系见上文第三节「总体学习路线」。
+**双语：** Topic 1–12 与终项目对应关系见上文第三节「总体学习路线」。
 
 ---
 

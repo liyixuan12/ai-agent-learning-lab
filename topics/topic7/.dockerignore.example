@@ -1,0 +1,64 @@
+# Topic 7 · 推荐的 .dockerignore（请复制到仓库根目录改名为 .dockerignore）
+#
+# 作用：决定哪些文件「不进入构建上下文」，从而：
+#   1) 不会被 COPY 进镜像（最重要的安全防线）
+#   2) docker build 会更快（上下文体积变小）
+#
+# 与 .gitignore 的关系：
+#   类似但不等同。.gitignore 控制 Git；.dockerignore 控制 docker build。
+#   两个文件的内容通常有大量重叠，但**必须各自维护一份**。
+
+# ===== 密钥与本地配置（绝不能进镜像） =====
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
+# ===== Python 运行产物 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# ===== 虚拟环境（极大且无意义） =====
+.venv/
+venv/
+
+# ===== 测试 / 静态分析缓存 =====
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== Git 元数据（暴露提交历史） =====
+.git/
+.gitignore
+.gitattributes
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+
+# ===== 文档与截图（可选；保留 README 即可） =====
+docs/
+screenshots/
+notebooks/
+
+# ===== 大文件 / 数据 / 模型 =====
+data/raw/
+data/processed/
+*.faiss
+*.bin
+*.pt
+*.pth
+*.onnx
+chroma/
+
+# ===== Docker 自身 =====
+Dockerfile.example
+docker-compose.example.yml
+.dockerignore.example

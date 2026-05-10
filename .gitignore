@@ -9,3 +9,6 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Topic 9 demo: local-only project memory store
+.topic9/

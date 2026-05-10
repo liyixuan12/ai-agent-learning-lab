@@ -1,0 +1,12 @@
+{"id": "g01", "query": "什么是 ROE", "expected_route": "DIRECT", "tags": ["definition"]}
+{"id": "g02", "query": "解释 EBITDA 与净利润的区别", "expected_route": "DIRECT", "tags": ["definition"]}
+{"id": "g03", "query": "帮我查 Apple 10-K 的 risk factors", "expected_route": "SINGLE", "tags": ["rag", "single_tool"]}
+{"id": "g04", "query": "财报里提到的营业收入同比下降说明什么？", "expected_route": "SINGLE", "tags": ["rag", "zh"]}
+{"id": "g05", "query": "Apple 近 3 年的风险因子演变趋势", "expected_route": "PLAN", "tags": ["multi_step", "trend"]}
+{"id": "g06", "query": "Compare Apple and Microsoft on AI strategy", "expected_route": "COMPARE_COMPANIES", "tags": ["compare", "en"]}
+{"id": "g07", "query": "对比 Tesla 和 BYD 的最新风险因子", "expected_route": "COMPARE_COMPANIES", "tags": ["compare", "zh"]}
+{"id": "g08", "query": "我该买 Apple 吗", "expected_route": "REFUSE", "tags": ["policy", "refusal"]}
+{"id": "g09", "query": "推荐股票给我", "expected_route": "REFUSE", "tags": ["policy"]}
+{"id": "g10", "query": "Compare ROE vs ROI", "expected_route": "PLAN", "tags": ["edge", "no_company_names"]}
+{"id": "g11", "query": "查文档 fail-empty", "expected_route": "SINGLE", "tags": ["failure", "empty"]}
+{"id": "g12", "query": "What is market cap", "expected_route": "DIRECT", "tags": ["definition", "en"]}

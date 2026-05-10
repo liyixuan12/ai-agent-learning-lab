@@ -1,0 +1,49 @@
+# Topic 7 · 进阶版 Dockerfile（多阶段构建 + 非 root 用户 + 健康检查）
+# 用法：把内容替换到仓库根目录的 Dockerfile，再 `docker build -t financial-ai-demo .`
+#
+# 与最小版的差别：
+# 1) 多阶段构建 → 最终镜像不带编译工具，体积更小、攻击面更小。
+# 2) 非 root 用户 appuser(uid=1000) → 容器内进程不再是 root。
+# 3) HEALTHCHECK → 编排平台能感知应用真的健康。
+# 4) 固定基础镜像版本 → CI 可复现。
+
+# ---------- Stage 1: builder ----------
+FROM python:3.12-slim AS builder
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# ---------- Stage 2: runtime ----------
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# 创建非 root 用户（uid 固定为 1000，便于和 host 卷权限对齐）
+RUN useradd --create-home --uid 1000 appuser
+
+# 把 builder 阶段安装好的依赖复制过来
+COPY --from=builder /root/.local /home/appuser/.local
+ENV PATH=/home/appuser/.local/bin:$PATH
+
+WORKDIR /app
+
+# 用 --chown 让源码归 appuser 所有；配合 .dockerignore 过滤 .env 等敏感文件
+COPY --chown=appuser:appuser . .
+
+USER appuser
+
+EXPOSE 8000
+
+# 简单健康检查（不需要装 curl）
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request,sys;\
+sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health',timeout=2).status==200 else 1)" \
+    || exit 1
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
