@@ -1,6 +1,6 @@
-# FinSight AI（金融 AI Demo）学习与项目仓库
+# AI Agent 学习实验室 · FinSight AI（金融 Demo）
 
-本仓库面向「金融场景 AI 应用」作品集：从 Python 与 FastAPI 基础，到 LLM / RAG，再延伸到 **Agent 工作流、评测与可观测、护栏与负责任 AI、以及 AI 产品管理**。完整目标、技术栈、每周安排与 **进度追踪表** 见：
+本仓库（`ai-agent-learning-lab`）面向「金融场景 AI 应用」作品集：从 Python 与 FastAPI 基础，到 LLM / RAG，再延伸到 **Agent 工作流、评测与可观测、护栏与负责任 AI、以及 AI 产品管理**。完整目标、技术栈、每周安排与 **进度追踪表** 见：
 
 **[docs/coding_study_roadmap.md](docs/coding_study_roadmap.md)**
 
